@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Orderbook.hpp"
-#include "trading.grpc.pb.h"
+#include "trading_optimized.grpc.pb.h"
 
 class TradingEngineServer final : public trading::TradingEngine::Service {
   private:

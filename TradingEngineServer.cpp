@@ -1,6 +1,6 @@
 #include "TradingEngineServer.hpp"
 
-grpc::Status TradingEngineServer::AddOrder(grpc::ServerContext *context, const trading::OrderRequest *request,
+grpc::Status TradingEngineServer::AddOrder(grpc::ServerContext * /*context*/, const trading::OrderRequest *request,
 										   trading::TradeResponse *response) {
 
 	OrderPointer order = std::make_shared<Order>(
@@ -11,10 +11,14 @@ grpc::Status TradingEngineServer::AddOrder(grpc::ServerContext *context, const t
 		request->quantity());
 
 	auto trades = orderbook_->AddOrder(order);
+	
+	// Set status based on whether order was filled or just placed
 	if (trades.empty()) {
-		response->set_status(::trading::OrderStatus::REJECTED);
-	} else {
+		// Order was added to orderbook without matches
 		response->set_status(::trading::OrderStatus::ACCEPTED);
+	} else {
+		// Order was matched and generated trades
+		response->set_status(::trading::OrderStatus::FILLED);
 		for (const auto &trade : trades) {
 			auto *bidTradeInfo = response->add_trades();
 			bidTradeInfo->set_order_id(trade.GetBidTrade().orderId_);
@@ -31,7 +35,7 @@ grpc::Status TradingEngineServer::AddOrder(grpc::ServerContext *context, const t
 	return grpc::Status::OK;
 }
 
-grpc::Status TradingEngineServer::CancelOrder(grpc::ServerContext *context, const trading::CancelOrderRequest *request,
+grpc::Status TradingEngineServer::CancelOrder(grpc::ServerContext * /*context*/, const trading::CancelOrderRequest *request,
 											  trading::CancelOrderResponse *response) {
 	orderbook_->CancelOrder(request->order_id());
 	response->set_success(true);
@@ -39,8 +43,14 @@ grpc::Status TradingEngineServer::CancelOrder(grpc::ServerContext *context, cons
 	return grpc::Status::OK;
 }
 
-grpc::Status TradingEngineServer::ModifyOrder(grpc::ServerContext *context, const trading::ModifyOrderRequest *request,
+grpc::Status TradingEngineServer::ModifyOrder(grpc::ServerContext * /*context*/, const trading::ModifyOrderRequest *request,
 											  trading::TradeResponse *response) {
+	// Check if order exists first
+	if (!orderbook_->OrderExists(request->order_id())) {
+		response->set_status(::trading::OrderStatus::REJECTED);
+		return grpc::Status::OK;
+	}
+
 	OrderModify order(
 		request->order_id(),
 		ParseSide(request->side()),
@@ -48,10 +58,14 @@ grpc::Status TradingEngineServer::ModifyOrder(grpc::ServerContext *context, cons
 		request->new_quantity());
 
 	Trades trades = orderbook_->ModifyOrder(order);
+	
+	// Set status based on whether order modification resulted in trades
 	if (trades.empty()) {
-		response->set_status(::trading::OrderStatus::REJECTED);
-	} else {
+		// Order was modified successfully without matches
 		response->set_status(::trading::OrderStatus::ACCEPTED);
+	} else {
+		// Order modification resulted in trades
+		response->set_status(::trading::OrderStatus::FILLED);
 		for (const auto &trade : trades) {
 			auto *bidTradeInfo = response->add_trades();
 			bidTradeInfo->set_order_id(trade.GetBidTrade().orderId_);
@@ -68,7 +82,7 @@ grpc::Status TradingEngineServer::ModifyOrder(grpc::ServerContext *context, cons
 	return grpc::Status::OK;
 }
 
-grpc::Status TradingEngineServer::GetOrderbook(grpc::ServerContext *context, const trading::OrderbookRequest *request,
+grpc::Status TradingEngineServer::GetOrderbook(grpc::ServerContext * /*context*/, const trading::OrderbookRequest * /*request*/,
 											   trading::OrderbookResponse *response) {
 	OrderbookLevelInfos orderInfos = orderbook_->GetOrderInfos();
 

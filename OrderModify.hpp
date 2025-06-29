@@ -7,8 +7,8 @@ class OrderModify
 public:
     OrderModify(OrderId orderId, Side side, Price price, Quantity quantity)
         : orderId_{ orderId }
-        , side_{ side }
         , price_{ price }
+        , side_{ side }
         , quantity_{ quantity }
     { }
 

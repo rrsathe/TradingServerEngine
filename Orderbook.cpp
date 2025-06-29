@@ -134,8 +134,8 @@ bool Orderbook::CanFullyFill(Side side, Price price, Quantity quantity) const {
 
 	for (const auto &[levelPrice, levelData] : data_) {
 		if (threshold.has_value() &&
-				(side == Side::Buy && threshold.value() > levelPrice) ||
-			(side == Side::Sell && threshold.value() < levelPrice))
+			((side == Side::Buy && threshold.value() > levelPrice) ||
+			 (side == Side::Sell && threshold.value() < levelPrice)))
 			continue;
 
 		if ((side == Side::Buy && levelPrice > price) ||
@@ -223,14 +223,14 @@ Trades Orderbook::MatchOrders() {
 		auto &[_, bids] = *bids_.begin();
 		auto &order = bids.front();
 		if (order->GetOrderType() == OrderType::FillAndKill)
-			CancelOrder(order->GetOrderId());
+			CancelOrderInternal(order->GetOrderId());  // Use internal method to avoid mutex deadlock
 	}
 
 	if (!asks_.empty()) {
 		auto &[_, asks] = *asks_.begin();
 		auto &order = asks.front();
 		if (order->GetOrderType() == OrderType::FillAndKill)
-			CancelOrder(order->GetOrderId());
+			CancelOrderInternal(order->GetOrderId());  // Use internal method to avoid mutex deadlock
 	}
 
 	return trades;
@@ -245,6 +245,15 @@ Orderbook::~Orderbook() {
 }
 
 Trades Orderbook::AddOrder(OrderPointer order) {
+	// Input validation
+	if (!order || order->GetInitialQuantity() == 0) {
+		return {};
+	}
+	
+	if (order->GetPrice() < 0 || order->GetPrice() > 1000000) { // Reasonable price bounds
+		return {};
+	}
+	
 	std::scoped_lock ordersLock{ordersMutex_};
 
 	// if (orders_.find(order->GetOrderId()) != orders_.end())
@@ -321,6 +330,11 @@ Trades Orderbook::ModifyOrder(OrderModify order) {
 
 	CancelOrder(order.GetOrderId());
 	return AddOrder(order.ToOrderPointer(orderType));
+}
+
+bool Orderbook::OrderExists(OrderId orderId) const {
+	std::scoped_lock ordersLock{ordersMutex_};
+	return orders_.find(orderId) != orders_.end();
 }
 
 std::size_t Orderbook::Size() const {

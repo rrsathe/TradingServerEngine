@@ -67,6 +67,7 @@ class Orderbook {
 	Trades AddOrder(OrderPointer order);
 	void CancelOrder(OrderId orderId);
 	Trades ModifyOrder(OrderModify order);
+	bool OrderExists(OrderId orderId) const;
 
 	std::size_t Size() const;
 	OrderbookLevelInfos GetOrderInfos() const;
