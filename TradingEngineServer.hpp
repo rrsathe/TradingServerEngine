@@ -7,8 +7,8 @@ class TradingEngineServer final : public trading::TradingEngine::Service {
   private:
 	std::shared_ptr<Orderbook> orderbook_;
 
-	OrderType ParseOrderType(trading::OrderType type);
-	Side ParseSide(::trading::Side side);
+	[[nodiscard]] OrderType ParseOrderType(trading::OrderType type);
+	[[nodiscard]] Side ParseSide(::trading::Side side);
 
   public:
 	TradingEngineServer(std::shared_ptr<Orderbook> orderbook) : orderbook_(std::move(orderbook)) {}
