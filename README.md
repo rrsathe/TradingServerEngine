@@ -41,57 +41,42 @@ sudo pacman -S cmake gcc protobuf grpc
 
 ## Building
 
-### Quick Start
+### CMake Build (Recommended)
 ```bash
-# Clone and build
-git clone <repository-url>
-cd TradingEngineServer
+# Configure build with Ninja (Release)
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
-# Build release version
-./build.sh
+# Compile all targets
+cmake --build build
 
-# Or build debug version
-./build.sh debug
+# Run unit and integration tests
+ctest --test-dir build --output-on-failure
+
+# Run latency benchmarks
+./build/trading_engine_benchmarks
 ```
 
-### Manual Build
+### Bazel Build
 ```bash
-mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
-```
+# Build all targets
+bazel build //...
 
-### Build Options
-```bash
-./build.sh help          # Show all commands
-./build.sh clean         # Clean build directory  
-./build.sh debug         # Build with debug symbols and sanitizers
-./build.sh release       # Build optimized for production
-./build.sh run           # Build and run the server
-./build.sh info          # Show build information
+# Run test suite
+bazel test //:trading_engine_tests
+
+# Run latency benchmarks
+bazel run //:trading_engine_benchmarks
 ```
 
 ## Running
 
 ### Start the Server
 ```bash
-# Using build script
-./build.sh run
-
-# Or directly
-./build/bin/trading_server
+./build/trading_server
 ```
 
 The server will start on `localhost:5001` by default.
 
-### Configuration
-
-Edit `.env` file to customize:
-```ini
-SERVER_PORT=5001
-SERVER_ADDRESS=0.0.0.0
-LOG_LEVEL=INFO
-```
 
 ## API Usage
 
@@ -156,14 +141,32 @@ print(f"Order status: {response.status}")
 ### Project Structure
 ```
 TradingEngineServer/
-├── CMakeLists.txt           # Build configuration
-├── build.sh                 # Build script
-├── main.cpp                 # Server entry point
-├── Orderbook.{cpp,hpp}      # Core matching engine
-├── TradingEngineServer.{cpp,hpp}  # gRPC service
-├── Order.hpp                # Order data structures
-├── trading_optimized.proto  # Protocol buffer definitions
-└── tests/                   # Unit tests (optional)
+├── BUILD.bazel              # Bazel build targets
+├── CMakeLists.txt           # Modern target-based CMake configuration
+├── MODULE.bazel             # Bzlmod module dependencies
+├── README.md                # Project documentation
+├── proto/                   # Canonical protobuf definitions
+│   └── trading.proto
+└── trading_engine/          # Google C++ Style codebase
+    ├── constants.h
+    ├── level_info.h
+    ├── main.cc
+    ├── order.cc
+    ├── order.h
+    ├── order_modify.h
+    ├── order_test.cc
+    ├── orderbook.cc
+    ├── orderbook.h
+    ├── orderbook_benchmark.cc
+    ├── orderbook_test.cc
+    ├── spsc_queue.h
+    ├── trade.h
+    ├── trading_engine_server.cc
+    ├── trading_engine_server.h
+    ├── trading_engine_server_test.cc
+    ├── types.cc
+    ├── types.h
+    └── types_test.cc
 ```
 
 ### Adding Features
@@ -175,12 +178,11 @@ TradingEngineServer/
 
 ### Testing
 ```bash
-# Run unit tests (if enabled)
-./build.sh debug
-cd build && ctest
+# Run GoogleTest suite via CTest
+ctest --test-dir build --output-on-failure
 
-# Manual testing with Python client
-python3 a.py
+# Run test suite via Bazel
+bazel test //:trading_engine_tests
 ```
 
 ## Performance Tuning
@@ -188,7 +190,8 @@ python3 a.py
 ### Compiler Optimizations
 ```bash
 # Maximum performance build
-./build.sh release
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
 ```
 
 ### Runtime Tuning
@@ -205,8 +208,8 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-pg"
 make
 
 # Run and profile
-./bin/trading_server &
-gprof ./bin/trading_server gmon.out > profile.txt
+./build/trading_server &
+gprof ./build/trading_server gmon.out > profile.txt
 ```
 
 ## Troubleshooting
@@ -235,7 +238,7 @@ clang++ --version  # Should be 12+
 **Port already in use:**
 ```bash
 lsof -i :5001
-# Kill existing process or change port in .env
+# Kill existing process
 ```
 
 **Permission denied:**
