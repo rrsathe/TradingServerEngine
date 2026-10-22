@@ -4,7 +4,6 @@
 
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "trading_engine/constants.h"
 #include "trading_engine/types.h"
 
 namespace trading_engine {

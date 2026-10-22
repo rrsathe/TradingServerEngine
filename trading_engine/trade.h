@@ -20,6 +20,12 @@ class Trade {
   Trade(TradeInfo bid_trade, TradeInfo ask_trade)
       : bid_trade_(bid_trade), ask_trade_(ask_trade) {}
 
+  Trade(const Trade&) = default;
+  Trade& operator=(const Trade&) = default;
+  Trade(Trade&&) = default;
+  Trade& operator=(Trade&&) = default;
+  ~Trade() = default;
+
   const TradeInfo& GetBidTrade() const { return bid_trade_; }
   const TradeInfo& GetAskTrade() const { return ask_trade_; }
 

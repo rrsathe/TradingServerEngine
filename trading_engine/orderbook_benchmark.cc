@@ -10,7 +10,7 @@
 namespace trading_engine {
 namespace {
 
-static void BM_AddOrderNoMatch(benchmark::State& state) {
+void BM_AddOrderNoMatch(benchmark::State& state) {
   Orderbook book;
   std::uint64_t id = 1;
   for (auto _ : state) {
@@ -22,7 +22,7 @@ static void BM_AddOrderNoMatch(benchmark::State& state) {
 }
 BENCHMARK(BM_AddOrderNoMatch);
 
-static void BM_AddOrderMatch(benchmark::State& state) {
+void BM_AddOrderMatch(benchmark::State& state) {
   Orderbook book;
   std::uint64_t id = 1;
   // Pre-seed asks
@@ -43,7 +43,7 @@ static void BM_AddOrderMatch(benchmark::State& state) {
 }
 BENCHMARK(BM_AddOrderMatch);
 
-static void BM_CancelOrder(benchmark::State& state) {
+void BM_CancelOrder(benchmark::State& state) {
   Orderbook book;
   std::uint64_t id = 1;
   for (auto _ : state) {
@@ -58,7 +58,7 @@ static void BM_CancelOrder(benchmark::State& state) {
 }
 BENCHMARK(BM_CancelOrder);
 
-static void BM_ModifyOrder(benchmark::State& state) {
+void BM_ModifyOrder(benchmark::State& state) {
   Orderbook book;
   std::uint64_t id = 1;
   book.AddOrder(std::make_unique<Order>(OrderType::kGoodTillCancel, id,
@@ -73,7 +73,7 @@ static void BM_ModifyOrder(benchmark::State& state) {
 }
 BENCHMARK(BM_ModifyOrder);
 
-static void BM_GetOrderInfos(benchmark::State& state) {
+void BM_GetOrderInfos(benchmark::State& state) {
   Orderbook book;
   std::uint64_t id = 1;
   for (int i = 0; i < 50; ++i) {

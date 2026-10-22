@@ -30,7 +30,10 @@ cc_library(
         "trading_engine/trading_engine_server.h",
         "trading_engine/types.h",
     ],
-    copts = ["-fno-exceptions"],
+    copts = [
+        "-fno-exceptions",
+        "-fno-rtti",
+    ],
     includes = ["."],
     visibility = ["//visibility:public"],
     deps = [
@@ -48,7 +51,10 @@ cc_library(
 cc_binary(
     name = "trading_server",
     srcs = ["trading_engine/main.cc"],
-    copts = ["-fno-exceptions"],
+    copts = [
+        "-fno-exceptions",
+        "-fno-rtti",
+    ],
     deps = [":trading_engine"],
 )
 
@@ -60,7 +66,10 @@ cc_test(
         "trading_engine/trading_engine_server_test.cc",
         "trading_engine/types_test.cc",
     ],
-    copts = ["-fno-exceptions"],
+    copts = [
+        "-fno-exceptions",
+        "-fno-rtti",
+    ],
     deps = [
         ":trading_engine",
         "@googletest//:gtest",
@@ -71,7 +80,10 @@ cc_test(
 cc_binary(
     name = "trading_engine_benchmarks",
     srcs = ["trading_engine/orderbook_benchmark.cc"],
-    copts = ["-fno-exceptions"],
+    copts = [
+        "-fno-exceptions",
+        "-fno-rtti",
+    ],
     deps = [
         ":trading_engine",
         "@google_benchmark//:benchmark",

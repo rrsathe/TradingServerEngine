@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "absl/status/statusor.h"
 #include "trading_engine/level_info.h"
 #include "trading_engine/order.h"
 #include "trading_engine/order_modify.h"

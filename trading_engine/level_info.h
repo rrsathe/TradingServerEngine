@@ -26,6 +26,12 @@ class OrderbookLevelInfos {
   OrderbookLevelInfos(LevelInfos bids, LevelInfos asks)
       : bids_(std::move(bids)), asks_(std::move(asks)) {}
 
+  OrderbookLevelInfos(const OrderbookLevelInfos&) = default;
+  OrderbookLevelInfos& operator=(const OrderbookLevelInfos&) = default;
+  OrderbookLevelInfos(OrderbookLevelInfos&&) = default;
+  OrderbookLevelInfos& operator=(OrderbookLevelInfos&&) = default;
+  ~OrderbookLevelInfos() = default;
+
   const LevelInfos& GetBids() const { return bids_; }
   const LevelInfos& GetAsks() const { return asks_; }
 

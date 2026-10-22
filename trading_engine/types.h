@@ -6,7 +6,6 @@
 #include <compare>
 #include <cstddef>
 #include <cstdint>
-#include <functional>
 #include <utility>
 
 #include "absl/hash/hash.h"
@@ -169,30 +168,5 @@ struct Symbol {
 };
 
 }  // namespace trading_engine
-
-namespace std {
-
-template <>
-struct hash<trading_engine::OrderId> {
-  std::size_t operator()(const trading_engine::OrderId& id) const noexcept {
-    return std::hash<std::uint64_t>{}(id.value);
-  }
-};
-
-template <>
-struct hash<trading_engine::Price> {
-  std::size_t operator()(const trading_engine::Price& p) const noexcept {
-    return std::hash<std::int64_t>{}(p.value);
-  }
-};
-
-template <>
-struct hash<trading_engine::Quantity> {
-  std::size_t operator()(const trading_engine::Quantity& q) const noexcept {
-    return std::hash<std::uint64_t>{}(q.value);
-  }
-};
-
-}  // namespace std
 
 #endif  // TRADING_ENGINE_TYPES_H_

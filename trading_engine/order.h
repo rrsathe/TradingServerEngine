@@ -4,13 +4,18 @@
 #include <cstdint>
 
 #include "absl/status/status.h"
-#include "trading_engine/constants.h"
 #include "trading_engine/types.h"
 
 namespace trading_engine {
 
 class Order {
  public:
+  Order(const Order&) = default;
+  Order& operator=(const Order&) = default;
+  Order(Order&&) = default;
+  Order& operator=(Order&&) = default;
+  ~Order() = default;
+
   Order(OrderType order_type, OrderId order_id, Side side, Price price,
         Quantity quantity);
 

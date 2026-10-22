@@ -11,6 +11,12 @@ namespace trading_engine {
 
 class OrderModify {
  public:
+  OrderModify(const OrderModify&) = default;
+  OrderModify& operator=(const OrderModify&) = default;
+  OrderModify(OrderModify&&) = default;
+  OrderModify& operator=(OrderModify&&) = default;
+  ~OrderModify() = default;
+
   OrderModify(OrderId order_id, Side side, Price price, Quantity quantity)
       : order_id_(order_id), side_(side), price_(price), quantity_(quantity) {}
 

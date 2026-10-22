@@ -10,8 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Enforce no exceptions as required by the Google C++ Style Guide
-add_compile_options(-fno-exceptions -Wall -Wextra -Wpedantic)
+# Enforce no exceptions and no RTTI as required by the Google C++ Style Guide
+add_compile_options(-fno-exceptions -fno-rtti -Wall -Wextra -Wpedantic)
 
 # Dependencies
 find_package(Threads REQUIRED)

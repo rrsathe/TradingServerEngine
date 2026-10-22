@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "absl/container/flat_hash_map.h"
 #include "gtest/gtest.h"
 #include "trading_engine/spsc_queue.h"
 
@@ -30,6 +31,20 @@ TEST(TypesTest, StrongTypeComparisonsAndArithmetic) {
   Quantity q2(5);
   EXPECT_EQ((q1 + q2).value, 15);
   EXPECT_EQ((q1 - q2).value, 5);
+}
+
+TEST(TypesTest, AbseilHashSupport) {
+  absl::flat_hash_map<OrderId, int> id_map;
+  id_map[OrderId(10)] = 100;
+  EXPECT_EQ(id_map[OrderId(10)], 100);
+
+  absl::flat_hash_map<Price, int> price_map;
+  price_map[Price(50)] = 200;
+  EXPECT_EQ(price_map[Price(50)], 200);
+
+  absl::flat_hash_map<Quantity, int> qty_map;
+  qty_map[Quantity(500)] = 300;
+  EXPECT_EQ(qty_map[Quantity(500)], 300);
 }
 
 TEST(TypesTest, ToStringConversions) {
