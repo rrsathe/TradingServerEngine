@@ -1,0 +1,80 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+proto_library(
+    name = "trading_proto",
+    srcs = ["proto/trading.proto"],
+)
+
+cc_proto_library(
+    name = "trading_cc_proto",
+    deps = [":trading_proto"],
+)
+
+cc_library(
+    name = "trading_engine",
+    srcs = [
+        "trading_engine/order.cc",
+        "trading_engine/orderbook.cc",
+        "trading_engine/trading_engine_server.cc",
+        "trading_engine/types.cc",
+    ],
+    hdrs = [
+        "trading_engine/constants.h",
+        "trading_engine/level_info.h",
+        "trading_engine/order.h",
+        "trading_engine/order_modify.h",
+        "trading_engine/orderbook.h",
+        "trading_engine/spsc_queue.h",
+        "trading_engine/trade.h",
+        "trading_engine/trading_engine_server.h",
+        "trading_engine/types.h",
+    ],
+    copts = ["-fno-exceptions"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/time",
+    ],
+)
+
+cc_binary(
+    name = "trading_server",
+    srcs = ["trading_engine/main.cc"],
+    copts = ["-fno-exceptions"],
+    deps = [":trading_engine"],
+)
+
+cc_test(
+    name = "trading_engine_tests",
+    srcs = [
+        "trading_engine/order_test.cc",
+        "trading_engine/orderbook_test.cc",
+        "trading_engine/trading_engine_server_test.cc",
+        "trading_engine/types_test.cc",
+    ],
+    copts = ["-fno-exceptions"],
+    deps = [
+        ":trading_engine",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "trading_engine_benchmarks",
+    srcs = ["trading_engine/orderbook_benchmark.cc"],
+    copts = ["-fno-exceptions"],
+    deps = [
+        ":trading_engine",
+        "@google_benchmark//:benchmark",
+        "@google_benchmark//:benchmark_main",
+    ],
+)
