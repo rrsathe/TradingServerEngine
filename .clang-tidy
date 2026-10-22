@@ -1,0 +1,14 @@
+---
+Checks: >
+  -*,
+  google-*,
+  abseil-*,
+  bugprone-*,
+  performance-*,
+  -modernize-use-nodiscard,
+  -google-runtime-references,
+  -google-readability-todo,
+  -bugprone-easily-swappable-parameters
+
+HeaderFilterRegex: 'trading_engine/.*'
+...

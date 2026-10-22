@@ -1,68 +1,77 @@
-# Build directories
+# Prerequisites
+*.d
+
+# Build directories & CMake output
 build/
+build-*/
 cmake-build-*/
 out/
 bin/
 lib/
 .cache/
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+Testing/
+CMakeUserPresets.json
 
-# Generated files
-*.pb.h
-*.pb.cc
-*.grpc.pb.h
-*.grpc.pb.cc
-
-# Compiled object files
+# Compiled Object files & static/shared libraries
 *.o
 *.obj
 *.so
-*.dll
 *.dylib
+*.dll
 *.a
 *.lib
 
 # Executables
 trading_server
+trading_engine_tests
+trading_engine_benchmarks
 server
 *.exe
+*.out
+*.app
 
-# IDE files
+# Package manager local trees
+vcpkg_installed/
+.conan/
+
+# IDE and Editor configurations
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
+.clangd/
 
-# CMake files
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile
-compile_commands.json
-CTestTestfile.cmake
-_deps/
-
-# Python
+# Python artifacts
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
 .Python
 env/
 venv/
-ENV/
-env.bak/
-venv.bak/
+.venv/
 
-# Logs
+# Logs and runtime databases
 *.log
 logs/
+*.pid
 
-# Temporary files
+# Temporary & backup files
 *.tmp
 *.temp
 *.bak
 *.backup
+*.orig
 
 # OS generated files
 .DS_Store
@@ -73,29 +82,23 @@ logs/
 ehthumbs.db
 Thumbs.db
 
-# Core dumps
+# Profiling and coverage
 core
 core.*
-
-# Profiling data
 gmon.out
 *.prof
+*.profdata
+*.profraw
 perf.data*
-
-# Coverage reports
 *.gcov
 *.gcno
 *.gcda
 coverage/
 
-# Environment variables
-.env.local
-.env.development
-.env.test
-.env.production
-
-# Package files
+# Docker build caches
+.docker/
 *.tar.gz
 *.zip
-*.deb
-*.rpm
+
+# Local reference documents
+google_cpp_style_guide*
