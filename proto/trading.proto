@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package trading;
+
+// TradingEngine RPC service for high-performance order matching.
+service TradingEngine {
+  rpc AddOrder(OrderRequest) returns (TradeResponse);
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+  rpc ModifyOrder(ModifyOrderRequest) returns (TradeResponse);
+  rpc GetOrderbook(OrderbookRequest) returns (OrderbookResponse);
+}
+
+// Supported order duration and execution qualifiers.
+enum OrderType {
+  ORDER_TYPE_UNSPECIFIED = 0;
+  ORDER_TYPE_GOOD_TILL_CANCEL = 1;
+  ORDER_TYPE_FILL_AND_KILL = 2;
+  ORDER_TYPE_FILL_OR_KILL = 3;
+  ORDER_TYPE_GOOD_FOR_DAY = 4;
+  ORDER_TYPE_MARKET = 5;
+}
+
+// Order side: Buy or Sell.
+enum Side {
+  SIDE_UNSPECIFIED = 0;
+  SIDE_BUY = 1;
+  SIDE_SELL = 2;
+}
+
+// Processing status of an order.
+enum OrderStatus {
+  ORDER_STATUS_UNSPECIFIED = 0;
+  ORDER_STATUS_ACCEPTED = 1;
+  ORDER_STATUS_REJECTED = 2;
+  ORDER_STATUS_FILLED = 3;
+  ORDER_STATUS_PARTIALLY_FILLED = 4;
+  ORDER_STATUS_CANCELLED = 5;
+}
+
+// Request message to submit a new order.
+message OrderRequest {
+  uint64 order_id = 1;
+  Side side = 2;
+  int64 price = 3;
+  uint64 quantity = 4;
+  OrderType order_type = 5;
+  string client_id = 6;
+  string instrument_id = 7;
+}
+
+// Details of an individual matched execution.
+message TradeInfo {
+  uint64 order_id = 1;
+  int64 price = 2;
+  uint64 quantity = 3;
+  Side side = 4;
+  int64 timestamp = 5;
+  string trade_id = 6;
+}
+
+// Response returned after submitting or modifying an order.
+message TradeResponse {
+  uint64 order_id = 1;
+  OrderStatus status = 2;
+  string reject_reason = 3;
+  repeated TradeInfo trades = 4;
+  int64 timestamp = 5;
+  int64 avg_fill_price = 6;
+  uint64 remaining_quantity = 7;
+}
+
+// Request to cancel an existing order.
+message CancelOrderRequest {
+  uint64 order_id = 1;
+  string client_id = 2;
+}
+
+// Response for a cancellation request.
+message CancelOrderResponse {
+  bool success = 1;
+  string reject_reason = 2;
+}
+
+// Request to modify an existing order.
+message ModifyOrderRequest {
+  uint64 order_id = 1;
+  Side side = 2;
+  int64 new_price = 3;
+  uint64 new_quantity = 4;
+  string client_id = 5;
+}
+
+// Aggregated price level information.
+message LevelInfo {
+  int64 price = 1;
+  uint64 quantity = 2;
+  uint32 order_count = 3;
+}
+
+// Request for orderbook depth.
+message OrderbookRequest {
+  string instrument_id = 1;
+  int32 depth = 2;
+}
+
+// Snapshot of orderbook state.
+message OrderbookResponse {
+  string instrument_id = 1;
+  int64 timestamp = 2;
+  repeated LevelInfo bids = 3;
+  repeated LevelInfo asks = 4;
+}
