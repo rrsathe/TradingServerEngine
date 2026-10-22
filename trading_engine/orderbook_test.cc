@@ -1,6 +1,8 @@
 #include "trading_engine/orderbook.h"
 
+#include <cstdint>
 #include <memory>
+#include <utility>
 
 #include "gtest/gtest.h"
 #include "trading_engine/level_info.h"

@@ -1,6 +1,6 @@
 #include "trading_engine/trading_engine_server.h"
 
-#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <utility>

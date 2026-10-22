@@ -14,8 +14,6 @@ class Order {
   Order& operator=(const Order&) = default;
   Order(Order&&) = default;
   Order& operator=(Order&&) = default;
-  ~Order() = default;
-
   Order(OrderType order_type, OrderId order_id, Side side, Price price,
         Quantity quantity);
 
@@ -28,6 +26,8 @@ class Order {
   Order(OrderId order_id, Side side, Quantity quantity);
 
   Order(std::uint64_t order_id, Side side, std::uint64_t quantity);
+
+  ~Order() = default;
 
   OrderId GetOrderId() const { return order_id_; }
   Side GetSide() const { return side_; }

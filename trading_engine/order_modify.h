@@ -15,8 +15,6 @@ class OrderModify {
   OrderModify& operator=(const OrderModify&) = default;
   OrderModify(OrderModify&&) = default;
   OrderModify& operator=(OrderModify&&) = default;
-  ~OrderModify() = default;
-
   OrderModify(OrderId order_id, Side side, Price price, Quantity quantity)
       : order_id_(order_id), side_(side), price_(price), quantity_(quantity) {}
 
@@ -32,6 +30,8 @@ class OrderModify {
         side_(side),
         price_(price),
         quantity_(quantity) {}
+
+  ~OrderModify() = default;
 
   OrderId GetOrderId() const { return order_id_; }
   Side GetSide() const { return side_; }

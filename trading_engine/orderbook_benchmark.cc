@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 #include "benchmark/benchmark.h"
 #include "trading_engine/order.h"
