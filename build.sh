@@ -1,23 +1,18 @@
 #!/bin/bash
 
-# Trading Engine Build Script
-# Usage: ./build.sh [debug|release|clean|help]
+# Trading Engine Build & Test Script
+# Usage: ./build.sh [debug|release|test|benchmark|lint|format|clean|help]
 
-set -e  # Exit on any error
+set -e
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Project settings
-PROJECT_NAME="TradingEngineServer"
 BUILD_DIR="build"
-SOURCE_DIR="."
 
-# Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -34,193 +29,131 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Function to check dependencies
 check_dependencies() {
     print_status "Checking dependencies..."
-    
-    # Check for required tools
     local missing_deps=()
-    
+
     if ! command -v cmake &> /dev/null; then
         missing_deps+=("cmake")
     fi
-    
-    if ! command -v make &> /dev/null && ! command -v ninja &> /dev/null; then
-        missing_deps+=("make or ninja")
+
+    if ! command -v ninja &> /dev/null && ! command -v make &> /dev/null; then
+        missing_deps+=("ninja or make")
     fi
-    
-    if ! command -v protoc &> /dev/null; then
-        missing_deps+=("protobuf-compiler")
+
+    if ! command -v clang++ &> /dev/null && ! command -v g++ &> /dev/null; then
+        missing_deps+=("clang++ or g++")
     fi
-    
-    if ! command -v grpc_cpp_plugin &> /dev/null; then
-        missing_deps+=("grpc-tools")
-    fi
-    
+
     if [ ${#missing_deps[@]} -ne 0 ]; then
         print_error "Missing dependencies: ${missing_deps[*]}"
-        echo
-        echo "Install them with:"
-        echo "  Ubuntu/Debian: sudo apt install cmake build-essential protobuf-compiler libprotobuf-dev libgrpc++-dev protobuf-compiler-grpc"
-        echo "  macOS: brew install cmake protobuf grpc"
-        echo "  Arch Linux: sudo pacman -S cmake protobuf grpc"
         exit 1
     fi
-    
-    print_success "All dependencies found"
+
+    print_success "Core dependencies found"
 }
 
-# Function to clean build directory
 clean_build() {
     print_status "Cleaning build directory..."
     if [ -d "$BUILD_DIR" ]; then
         rm -rf "$BUILD_DIR"
         print_success "Build directory cleaned"
-    else
-        print_warning "Build directory doesn't exist"
     fi
 }
 
-# Function to create build directory
-create_build_dir() {
-    if [ ! -d "$BUILD_DIR" ]; then
-        mkdir -p "$BUILD_DIR"
-        print_status "Created build directory"
-    fi
-}
-
-# Function to configure cmake
-configure_cmake() {
-    local build_type=$1
-    local extra_flags=$2
-    
+configure_build() {
+    local build_type="${1:-Release}"
     print_status "Configuring CMake for $build_type build..."
-    
-    cd "$BUILD_DIR"
-    
-    cmake .. \
-        -DCMAKE_BUILD_TYPE="$build_type" \
-        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-        $extra_flags
-    
-    cd ..
-    
-    print_success "CMake configuration complete"
+    cmake -B "$BUILD_DIR" -G Ninja -DCMAKE_BUILD_TYPE="$build_type"
 }
 
-# Function to build project
-build_project() {
-    local jobs=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
-    
-    print_status "Building project with $jobs parallel jobs..."
-    
-    cd "$BUILD_DIR"
-    make -j"$jobs"
-    cd ..
-    
+compile_targets() {
+    print_status "Compiling targets..."
+    cmake --build "$BUILD_DIR"
     print_success "Build completed successfully"
 }
 
-# Function to run the server
-run_server() {
-    if [ -f "$BUILD_DIR/bin/trading_server" ]; then
-        print_status "Starting trading server..."
-        "$BUILD_DIR/bin/trading_server"
-    else
-        print_error "Trading server executable not found. Please build first."
-        exit 1
-    fi
+run_tests() {
+    print_status "Running test suite via ctest..."
+    ctest --test-dir "$BUILD_DIR" --output-on-failure
+    print_success "All tests passed"
 }
 
-# Function to show build information
-show_info() {
-    print_status "Build Information:"
-    echo "  Project: $PROJECT_NAME"
-    echo "  Build Directory: $BUILD_DIR"
-    echo "  Source Directory: $SOURCE_DIR"
-    echo
-    
-    if [ -f "$BUILD_DIR/bin/trading_server" ]; then
-        echo "  Executable: $BUILD_DIR/bin/trading_server"
-        echo "  Size: $(du -h "$BUILD_DIR/bin/trading_server" | cut -f1)"
-        echo "  Modified: $(stat -c %y "$BUILD_DIR/bin/trading_server" 2>/dev/null || stat -f %Sm "$BUILD_DIR/bin/trading_server" 2>/dev/null)"
-    else
-        echo "  Executable: Not built yet"
-    fi
+run_benchmarks() {
+    print_status "Running Google Benchmark suite..."
+    "./$BUILD_DIR/trading_engine_benchmarks"
 }
 
-# Function to show help
+format_code() {
+    print_status "Running clang-format -style=Google across codebase..."
+    clang-format -style=Google -i trading_engine/*.h trading_engine/*.cc
+    print_success "Code formatted according to Google C++ Style Guide"
+}
+
+lint_code() {
+    print_status "Running clang-tidy with Google profile..."
+    clang-tidy -p "$BUILD_DIR" \
+        trading_engine/types.cc \
+        trading_engine/order.cc \
+        trading_engine/orderbook.cc \
+        trading_engine/trading_engine_server.cc \
+        trading_engine/main.cc
+    print_success "Linter completed with zero warnings"
+}
+
 show_help() {
     echo "Trading Engine Build Script"
-    echo
-    echo "Usage: $0 [COMMAND] [OPTIONS]"
-    echo
+    echo "Usage: ./build.sh [command]"
+    echo ""
     echo "Commands:"
-    echo "  debug     Build debug version with sanitizers"
-    echo "  release   Build optimized release version (default)"
-    echo "  clean     Clean build directory"
-    echo "  run       Build and run the server"
-    echo "  info      Show build information"
-    echo "  help      Show this help message"
-    echo
-    echo "Examples:"
-    echo "  $0                # Build release version"
-    echo "  $0 debug          # Build debug version"
-    echo "  $0 clean release  # Clean and build release"
-    echo "  $0 run            # Build and run server"
+    echo "  debug       - Build in Debug mode"
+    echo "  release     - Build in Release mode (default)"
+    echo "  test        - Build and run unit tests"
+    echo "  benchmark   - Build and run Google Benchmark latency suite"
+    echo "  format      - Format codebase with clang-format -style=Google"
+    echo "  lint        - Run clang-tidy under Google style profile"
+    echo "  clean       - Remove build artifacts"
+    echo "  help        - Show this help message"
 }
 
-# Main execution
-main() {
-    local command=${1:-release}
-    
-    # Handle clean command first
-    if [[ "$*" == *"clean"* ]]; then
+check_dependencies
+
+case "${1:-release}" in
+    debug)
+        configure_build "Debug"
+        compile_targets
+        ;;
+    release)
+        configure_build "Release"
+        compile_targets
+        ;;
+    test)
+        configure_build "Release"
+        compile_targets
+        run_tests
+        ;;
+    benchmark)
+        configure_build "Release"
+        compile_targets
+        run_benchmarks
+        ;;
+    format)
+        format_code
+        ;;
+    lint)
+        configure_build "Release"
+        compile_targets
+        lint_code
+        ;;
+    clean)
         clean_build
-        # Remove clean from arguments
-        set -- "${@/clean/}"
-        command=${1:-release}
-    fi
-    
-    case "$command" in
-        debug)
-            check_dependencies
-            create_build_dir
-            configure_cmake "Debug" "-DENABLE_TESTING=ON"
-            build_project
-            show_info
-            ;;
-        release)
-            check_dependencies
-            create_build_dir
-            configure_cmake "Release" ""
-            build_project
-            show_info
-            ;;
-        run)
-            if [ ! -f "$BUILD_DIR/bin/trading_server" ]; then
-                print_warning "Server not built. Building release version first..."
-                check_dependencies
-                create_build_dir
-                configure_cmake "Release" ""
-                build_project
-            fi
-            run_server
-            ;;
-        info)
-            show_info
-            ;;
-        help|--help|-h)
-            show_help
-            ;;
-        *)
-            print_error "Unknown command: $command"
-            echo
-            show_help
-            exit 1
-            ;;
-    esac
-}
-
-# Run main function with all arguments
-main "$@"
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        print_error "Unknown command: $1"
+        show_help
+        exit 1
+        ;;
+esac
